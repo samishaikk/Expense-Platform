@@ -1,5 +1,5 @@
 import jwt
-from fastapi import Depends,HTTPException,status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.db import get_db
@@ -9,7 +9,9 @@ from app.security import decode_access_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    request: Request,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ) -> Employee:
     credentials_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -25,6 +27,9 @@ def get_current_user(
     employee = db.get(Employee, employee_id)
     if employee is None:
         raise credentials_error
+
+    request.state.user_id = employee.id
+    request.state.user_role = employee.role.value
     return employee
 
 def require_manager(current_user: Employee = Depends(get_current_user)) -> Employee:
