@@ -38,3 +38,16 @@ def create_employee(
     db.commit()
     db.refresh(employee)
     return employee
+
+
+@router.get("", response_model=list[EmployeeOut])
+def list_my_team(
+    db: Session = Depends(get_db),
+    current_user: Employee = Depends(require_manager),
+):
+    query = (
+        select(Employee)
+        .where(Employee.manager_id == current_user.id)
+        .order_by(Employee.id)
+    )
+    return db.scalars(query).all()

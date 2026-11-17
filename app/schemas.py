@@ -1,7 +1,9 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from app.models import Category, ExpenseStatus, Role
+from typing import Literal
+from pydantic import BaseModel,ConfigDict,EmailStr,Field,model_validator
+from app.models import Category,ExpenseStatus,Role
+
 
 class EmployeeCreate(BaseModel):
     name:str = Field(min_length=1,max_length=100)
@@ -36,4 +38,26 @@ class ExpenseOut(BaseModel):
     category: Category
     description: str
     status: ExpenseStatus
+    created_at: datetime
+
+class DecisionIn(BaseModel):
+    decision: Literal["approved", "rejected"]
+    comment: str | None = Field(default=None, max_length=500)
+
+    @model_validator(mode="after")
+    def comment_required_for_rejection(self):
+        if self.decision == "rejected" and not (self.comment and self.comment.strip()):
+            raise ValueError("A comment is required when rejecting an expense")
+        return self
+    
+class AuditOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    expense_id: int
+    actor_id: int
+    actor_role: str
+    action: str
+    old_status: str | None
+    new_status: str | None
+    comment: str | None
     created_at: datetime
