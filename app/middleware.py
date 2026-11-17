@@ -5,7 +5,14 @@ import uuid
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from app.metrics import record_request
+
 logger = logging.getLogger("app.request")
+
+
+def _route_label(request: Request) -> str:
+    route = request.scope.get("route")
+    return route.path if route is not None else "unmatched"
 
 
 async def log_requests(request: Request, call_next):
@@ -16,26 +23,32 @@ async def log_requests(request: Request, call_next):
     try:
         response = await call_next(request)
     except Exception:
-        latency_ms = round((time.perf_counter() - start) * 1000, 2)
-        logger.error(
-            "request crashed",
-            exc_info=True,
-            extra=_fields(request, request_id, 500, latency_ms),
-        )
+        latency = time.perf_counter() - start
+        route = _route_label(request)
+        if route != "/metrics":
+            logger.error(
+                "request crashed",
+                exc_info=True,
+                extra=_fields(request, request_id, 500, round(latency * 1000, 2)),
+            )
+            record_request(request.method, route, 500, latency)
         response = JSONResponse({"detail": "Internal server error"}, status_code=500)
     else:
-        latency_ms = round((time.perf_counter() - start) * 1000, 2)
+        latency = time.perf_counter() - start
+        route = _route_label(request)
         status_code = response.status_code
-        level = (
-            logging.ERROR if status_code >= 500
-            else logging.WARNING if status_code >= 400
-            else logging.INFO
-        )
-        logger.log(
-            level,
-            "request completed",
-            extra=_fields(request, request_id, status_code, latency_ms),
-        )
+        if route != "/metrics":
+            record_request(request.method, route, status_code, latency)
+            level = (
+                logging.ERROR if status_code >= 500
+                else logging.WARNING if status_code >= 400
+                else logging.INFO
+            )
+            logger.log(
+                level,
+                "request completed",
+                extra=_fields(request, request_id, status_code, round(latency * 1000, 2)),
+            )
 
     response.headers["X-Request-ID"] = request_id
     return response
