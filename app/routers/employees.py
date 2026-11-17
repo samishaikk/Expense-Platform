@@ -5,12 +5,18 @@ from app.db import get_db
 from app.models import Employee,Role
 from app.schemas import EmployeeCreate,EmployeeOut
 from app.security import hash_password
+from app.auth import require_manager
 
 router = APIRouter(prefix="/employees",tags=["employees"])
 
-@router.post("",response_model=EmployeeOut,status_code=status.HTTP_201_CREATED)
 
-def create_employee(payload:EmployeeCreate,db:Session=Depends(get_db)):
+@router.post("", response_model=EmployeeOut, status_code=status.HTTP_201_CREATED)
+def create_employee(
+    payload: EmployeeCreate,
+    db: Session = Depends(get_db),
+    current_user: Employee = Depends(require_manager),
+):
+
     existing = db.scalar(select(Employee).where(Employee.email==payload.email))
     
     if existing:
