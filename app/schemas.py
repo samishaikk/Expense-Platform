@@ -15,3 +15,7 @@ class EmployeeOut(BaseModel):
     email:EmailStr
     role:Role
     manager_id:int | None
+    
+class Token(BaseModel):
+    access_token:str
+    token_type:str = 'bearer'
