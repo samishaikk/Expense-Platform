@@ -107,7 +107,7 @@ GitHub Actions runs the same suite on every push, with a Postgres service contai
 | Fault | 3 min | 428 | 178 returned 500 (41.6%) |
 | Recovery | 2 min | 579 | all 200 |
 
-During the fault, p95 latency rose to about 0.9 s. `HighErrorRate` was first Pending at 19:19:30 and first Firing at 19:20:26, 1 min 22 s after the fault began. Full timeline, impact and notes are in [`incident/incident-report.md`](incident/incident-report.md).
+During the fault, p95 latency rose to about 0.9 s. `HighErrorRate` was first Pending at 19:19:30 and first Firing at 19:20:26, 1 min 22 s after the fault began. Full timeline, impact and notes are in [`incident/incident-report.md`](incident/incident_report.md).
 
 The fault endpoint (`/debug/fault`) is only registered when `FAULT_INJECTION_ENABLED=true`. It is off by default, and when it is off the route does not exist (404).
 
