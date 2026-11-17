@@ -20,6 +20,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://expense_user:expense_pass@db:5432/expense_db
       SECRET_KEY: dev-only-change-me
+      FAULT_INJECTION_ENABLED: ${FAULT_INJECTION_ENABLED:-false}
     ports:
       - "8000:8000"
     depends_on:
