@@ -13,8 +13,8 @@ def get_current_user(
 ) -> Employee:
     credentials_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Invalid or expired token',
-        headers={'WWW-Authenticate": "Bearer'},
+        detail="Invalid or expired token",
+        headers={"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = decode_access_token(token)

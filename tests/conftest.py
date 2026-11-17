@@ -51,9 +51,18 @@ def client(db_session):
 
 @pytest.fixture
 def manager(db_session):
-    return make_employee(db_session, "manager@example.com", role=Role.manager, name="Maya Manager")
+    return make_employee(db_session, "manager@example.com", role=Role.manager, name="Sami Manager")
 
 
 @pytest.fixture
 def employee(db_session, manager):
     return make_employee(db_session, "employee@example.com", manager_id=manager.id, name="Ravi Employee")
+
+@pytest.fixture
+def other_manager(db_session):
+    return make_employee(db_session, "other.manager@example.com", role=Role.manager, name="Omar Manager")
+
+
+@pytest.fixture
+def other_employee(db_session, other_manager):
+    return make_employee(db_session, "other.employee@example.com", manager_id=other_manager.id, name="Olga Employee")
