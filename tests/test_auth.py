@@ -73,3 +73,7 @@ def test_me_with_token_for_user_that_does_not_exist(client):
     token = create_access_token(999999)
     response = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 401
+    
+def test_login_with_overlong_password_is_rejected(client, employee):
+    response = login(client, employee.email, "x" * 100)
+    assert response.status_code == 401
